@@ -1,0 +1,12 @@
+`timescale 1ns / 1ps
+//Allocate Input and output accordingly.
+
+module mux21_4b(s, a3, a2, a1, a0, b3, b2, b1, b0, f3, f2, f1, f0);
+ input s, a3, a2, a1, a0, b3, b2, b1, b0; 
+output f3, f2, f1, f0; 
+// Instantiating the mux21 from Lab 9 four times 
+mux21 m3 (s, a3, b3, f3);
+mux21 m2 (s, a2, b2, f2); 
+mux21 m1 (s, a1, b1, f1); 
+mux21 m0 (s, a0, b0, f0);
+ endmodule 
