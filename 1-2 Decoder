@@ -1,0 +1,15 @@
+Design Source:
+
+
+
+
+`timescale 1ns / 1ps
+
+
+
+module decoder12(w, enable, y0, y1);
+ input w, enable;
+ output y0, y1;
+ assign y0 = enable & ~w;
+ assign y1 = enable & w;
+endmodule
