@@ -1,9 +1,15 @@
 Design Source:
-//Allocate input and output accordlingly
 
-`timescale 1ns / 1ps 
-module mux21(s, a, b, f); 
-input s, a, b; 
-output f; // assign connects a logic expression to a non-reg output 
-assign f = ~s & a | s & b; 
-endmodule 
+
+
+
+`timescale 1ns / 1ps
+
+
+
+module decoder12(w, enable, y0, y1);
+ input w, enable;
+ output y0, y1;
+ assign y0 = enable & ~w;
+ assign y1 = enable & w;
+endmodule
