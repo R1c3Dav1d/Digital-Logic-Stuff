@@ -1,0 +1,34 @@
+`timescale 1ns / 1ps
+//Allocate input and output accordingly
+
+
+module decoder24(w1, w0, enable, y0, y1, y2, y3);
+    input w1, w0, enable;
+    output y0, y1, y2, y3;
+    
+    // Internal wires to enable the specific 1-to-2 decoder block
+    wire en_low, en_high;
+
+    // Use w1 to determine which decoder block is active
+    // If w1 = 0, the lower block (y0, y1) is enabled
+    // If w1 = 1, the upper block (y2, y3) is enabled
+    assign en_low  = enable & ~w1;
+    assign en_high = enable & w1;
+
+    // Instantiate the first 1-to-2 decoder for the lower outputs
+    decoder12 unit0 (
+        .w(w0), 
+        .enable(en_low), 
+        .y0(y0), 
+        .y1(y1)
+    );
+
+    // Instantiate the second 1-to-2 decoder for the upper outputs
+    decoder12 unit1 (
+        .w(w0), 
+        .enable(en_high), 
+        .y0(y2), 
+        .y1(y3)
+    );
+
+endmodule
