@@ -1,0 +1,29 @@
+Design Source:
+//Allocate Inputs and Outputs accordingly
+
+
+
+`timescale 1ns / 1ps
+module adder4b(Cin, X3, X2, X1, X0, Y3, Y2, Y1, Y0, Cout, S3, S2, S1, S0, OF);
+    input Cin, X3, X2, X1, X0, Y3, Y2, Y1, Y0;
+    output Cout, S3, S2, S1, S0, OF;
+    
+    // Internal wires to carry the signal between FA stages
+    wire C1, C2, C3;
+
+    // Instance for Bit 0
+    FA fa0 (.X(X0), .Y(Y0), .Cin(Cin), .Cout(C1), .S(S0));
+
+    // Instance for Bit 1
+    FA fa1 (.X(X1), .Y(Y1), .Cin(C1), .Cout(C2), .S(S1));
+
+    // Instance for Bit 2
+    FA fa2 (.X(X2), .Y(Y2), .Cin(C2), .Cout(C3), .S(S2));
+
+    // Instance for Bit 3 (MSB)
+    FA fa3 (.X(X3), .Y(Y3), .Cin(C3), .Cout(Cout), .S(S3));
+
+    // Overflow Logic: XOR of the carry-in and carry-out of the MSB
+    assign OF = C3 ^ Cout;
+
+endmodule
