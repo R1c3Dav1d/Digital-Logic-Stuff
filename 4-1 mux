@@ -1,0 +1,23 @@
+READ!!!!!!
+Needs 2-1 mux in another design source
+
+
+
+Design Source:
+`timescale 1ns / 1ps
+
+module mux41(
+    input s1, s0, a, b, c, d,
+    output f
+);
+    wire mid_x;
+    wire mid_y;
+
+    // First stage of selection using s0
+    mux21 M1(s0, a, b, mid_x);
+    mux21 M2(s0, c, d, mid_y);
+
+    // Final stage of selection using s1
+    mux21 M3(s1, mid_x, mid_y, f);
+
+endmodule
