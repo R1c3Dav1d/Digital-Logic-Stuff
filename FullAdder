@@ -1,0 +1,14 @@
+Design Source:
+//Allocate Input and Outputs accordingly
+
+`timescale 1ns / 1ps
+module FA(X, Y, Cin, Cout, S);
+    input X, Y, Cin;
+    output Cout, S;
+
+    // S is 1 if an odd number of inputs are 1 (X XOR Y XOR Cin)
+    assign S = X ^ Y ^ Cin;
+
+    // Cout is 1 if at least two inputs are 1
+    assign Cout = (X & Y) | (X & Cin) | (Y & Cin);
+endmodule
