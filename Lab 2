@@ -1,0 +1,99 @@
+Design Source:
+`timescale 1ns / 1ps
+// Note that we can do this without using procedural code
+// However, we will be using procedural code to become more familiar with it 
+module mux21(S, A, B, F);
+ input S, A, B;
+ // Notice that F is declared as both an output (since it is the result)
+ // and as a reg (because its value is set when in the always block.
+ output reg F;
+
+ // S or A or B lists the items in this always block's sensitivity list
+ // This means that the always block runs when any input in the
+ // sensitivity list changes.
+ // Note that you can just write "*" in lieu of "S or A or B" and (no quotes)
+ // all of the inputs will be used in the sensitivity list.
+ always @(S or A or B) begin
+
+ // This is an if block: the line F = A is inside the if block, meaning
+ // that if S is equal to 0, then F will take the value of A.
+ // Remember how a 2-1 mux works: if S is 0, then F = A, and if S is 1, then F = B.
+ if (S == 0) begin
+
+ // Reflects what should happen when S is equal to 0.
+ F = A;
+
+ // The else block: if the preceding condition (S == 0) is false, then the
+ // else block will run.
+ // This else is followed by another if, which checks to see if S is equal to 1.
+ // the end at the beginning of the line closes the if (S==0)
+ end else if (S == 1) begin
+
+ // Reflects what should happen when S is equal to 1.
+ F = B;
+ end
+ end
+
+endmodule
+
+
+
+Simulation Source:
+
+`timescale 1ns / 1ps
+/* After running the simulation, if you do not see "Testbench
+ Complete" on the console, then increase simulation time to
+ Say 10000 ns */
+module tb_mux21();
+ reg S, A, B;
+ wire F;
+ reg [3:0] ctr;
+ mux21 uut(S, A, B, F);
+ // The initial block runs procedural code before anything else runs.
+ initial begin
+ $display("Testbench start");
+ $display("S A B | F");
+{S, A, B, ctr} = 7'b0000000;
+ end
+ // The always block executes procedural (line-by-line) code.
+ always begin
+ #10;
+ $display("%d %d %d | %d", S, A, B, F);
+
+ case (ctr)
+ 0: {S, A, B, ctr} = 7'b0100001;
+ 1: {S, A, B, ctr} = 7'b0010010;
+ 2: {S, A, B, ctr} = 7'b0100011;
+ 3: {S, A, B, ctr} = 7'b0010100;
+ 4: {S, A, B, ctr} = 7'b0100101;
+ 5: {S, A, B, ctr} = 7'b0010110;
+ 6: {S, A, B, ctr} = 7'b0110111;
+ 7: {S, A, B, ctr} = 7'b1111000;
+ 8: {S, A, B, ctr} = 7'b1101001;
+ 9: {S, A, B, ctr} = 7'b1011010;
+ 10: {S, A, B, ctr} = 7'b1101011;
+ 11: {S, A, B, ctr} = 7'b1011100;
+ 12: {S, A, B, ctr} = 7'b1101101;
+ 13: {S, A, B, ctr} = 7'b1011110;
+ 14: begin
+ $display("Testbench end");
+ $finish;
+ end
+ endcase
+ end
+endmodule
+
+
+
+Constraints:
+
+#inputs
+set_property PACKAGE_PIN R2 [get_ports S]
+ set_property IOSTANDARD LVCMOS33 [get_ports S]
+set_property PACKAGE_PIN W19 [get_ports A]
+ set_property IOSTANDARD LVCMOS33 [get_ports A]
+set_property PACKAGE_PIN T17 [get_ports B]
+ set_property IOSTANDARD LVCMOS33 [get_ports B]
+#output
+set_property PACKAGE_PIN U16 [get_ports F]
+ set_property IOSTANDARD LVCMOS33 [get_ports F]
