@@ -1,0 +1,16 @@
+`timescale 1ns / 1ps
+module DFFv1(D, CLK, Q);
+// Just as in the D Latch from the previous lab, we have
+// input and output ports that need to be declared.
+ input D, CLK;
+ output reg Q;
+// Observe the output Q is declared as an output and as reg.
+// This is because the value of Q is set from the following always block.
+ always @(posedge CLK)
+// This always block runs anytime the CLK has a positive-edge.
+// Q is declared as reg, where its output will change to match input D.
+ Q = D;
+// Since this is the only line of code in the always block
+// it is not necessary to add begin and end keywords for this block.
+endmodule
+5. Prod
