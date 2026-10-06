@@ -14,7 +14,7 @@ module SeqDet100 (
 
     // Next State Logic expressions
     assign D1 = (Q1 ^ Q0) & (~P);
-    assign D0 = P;
+    assign D0 = P | (Q1 & ~Q0 & ~p);
 
     // Output logic expression (Moore machine relies only on current state)
     assign Z = Q1 & Q0;
