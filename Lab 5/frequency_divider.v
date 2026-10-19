@@ -28,6 +28,6 @@ module frequency_divider (CLKO, CLKF);
  TFF tffgiv(.T(1), .CLK(CLKS[giv - 1]), .PRS_N(1), .CLR_N(1), .Q(CLKS[giv]));
  end
  // Finally, set CLKF to the correct clock from the 26 mentioned above. :)
-  assign CLKF = CLKS[CLK_COUNT];
+ assign CLKF = CLKS[25];
 
 endmodule
