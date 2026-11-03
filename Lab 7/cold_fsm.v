@@ -1,66 +1,53 @@
 
 `timescale 1ns / 1ps
 
-module illusion (
+module cold_fsm (
+    input CLK,
     input EN,
-    input [15:0] DATA,
-    input BOARDCLK,
-    output A, B, C, D, E, F, G,
-    output [3:0] ONECOLD
+    output reg [3:0] ONECOLD,
+    output reg [1:0] STATE_OUT
 );
 
-    // FSM state variables
-    wire Q1, Q0;
+    // State definitions
+    parameter SL  = 2'b00;
+    parameter SML = 2'b01;
+    parameter SMR = 2'b10;
+    parameter SR  = 2'b11;
 
-    // Multiplexer output
-    wire [3:0] HEX_OUT;
+    reg [1:0] state = SL;
+    reg [1:0] next_state;
 
-    // Seven-segment driver inputs
-    wire W3, W2, W1, W0;
+    // State register
+    always @(posedge CLK) begin
+        state <= next_state;
+    end
 
-    // Divided clock
-    wire FASTCLK;
+    // Next-state logic
+    always @(*) begin
+        next_state = state;
 
-    // 1. Frequency divider
-    frequency_divider fd (
-        .CLKO(BOARDCLK),
-        .CLKF(FASTCLK)
-    );
+        if (EN) begin
+            case (state)
+                SL:  next_state = SML;
+                SML: next_state = SMR;
+                SMR: next_state = SR;
+                SR:  next_state = SL;
+                default: next_state = SL;
+            endcase
+        end
+    end
 
-    // 2. One-cold finite state machine
-    cold_fsm c_fsm (
-        .CLK(FASTCLK),
-        .EN(EN),
-        .ONECOLD(ONECOLD),
-        .STATE_OUT({Q1, Q0})
-    );
+    // Output logic
+    always @(*) begin
+        STATE_OUT = state;
 
-    // 3. Four-to-one, 4-bit multiplexer
-    mux_4bit_4to1 data_mux (
-        .I0(DATA[15:12]),
-        .I1(DATA[11:8]),
-        .I2(DATA[7:4]),
-        .I3(DATA[3:0]),
-        .S({Q1, Q0}),
-        .Y(HEX_OUT)
-    );
-
-    // 4. Split multiplexer output into bits
-    assign {W3, W2, W1, W0} = HEX_OUT;
-
-    // 5. Seven-segment decoder
-    sevens_driver s_driver (
-        .W3(W3),
-        .W2(W2),
-        .W1(W1),
-        .W0(W0),
-        .A(A),
-        .B(B),
-        .C(C),
-        .D(D),
-        .E(E),
-        .F(F),
-        .G(G)
-    );
+        case (state)
+            SL:  ONECOLD = 4'b0111;
+            SML: ONECOLD = 4'b1011;
+            SMR: ONECOLD = 4'b1101;
+            SR:  ONECOLD = 4'b1110;
+            default: ONECOLD = 4'b0111;
+        endcase
+    end
 
 endmodule
