@@ -1,33 +1,33 @@
+
 `timescale 1ns / 1ps
 
-module illusion (EN, DATA, BOARDCLK, A, B, C, D, E, F, G, ONECOLD);
-    // Sixteen bits (4 hex digits) to be displayed on the seven-segment displays.
-    input [15:0] DATA;
-    // The 100 MHz board clock and Enable button.
-    input EN, BOARDCLK;
-    // Sevens driver outputs.
-    output A, B, C, D, E, F, G;
-    // Only one output from ONECOLD should be 0. The rest should be 1.
-    output [3:0] ONECOLD;
+module illusion (
+    input EN,
+    input [15:0] DATA,
+    input BOARDCLK,
+    output A, B, C, D, E, F, G,
+    output [3:0] ONECOLD
+);
 
-    // State variables for the Active Digit.
+    // FSM state variables
     wire Q1, Q0;
-    
-    // Inputs to the sevens_driver (4 bits split out from the multiplexer output).
-    wire W3, W2, W1, W0;
+
+    // Multiplexer output
     wire [3:0] HEX_OUT;
-    
-    // The generated scan-rate clock.
+
+    // Seven-segment driver inputs
+    wire W3, W2, W1, W0;
+
+    // Divided clock
     wire FASTCLK;
 
-    // First, generate a clock fast enough that you can't see the digits moving,
-    // But slow enough that you can see each digit individually (~1 kHz).
+    // 1. Frequency divider
     frequency_divider fd (
         .CLKO(BOARDCLK),
         .CLKF(FASTCLK)
     );
 
-    // Next, keep state of which digit is active and control anodes.
+    // 2. One-cold finite state machine
     cold_fsm c_fsm (
         .CLK(FASTCLK),
         .EN(EN),
@@ -35,32 +35,31 @@ module illusion (EN, DATA, BOARDCLK, A, B, C, D, E, F, G, ONECOLD);
         .STATE_OUT({Q1, Q0})
     );
 
-    // A 4-bit 4-1 Multiplexer to select the correct nibble for the active display.
+    // 3. Four-to-one, 4-bit multiplexer
     mux_4bit_4to1 data_mux (
-        .I3(DATA[15:12]),
-        .I2(DATA[11:8]),
-        .I1(DATA[7:4]),
-        .I0(DATA[3:0]),
+        .I0(DATA[15:12]),
+        .I1(DATA[11:8]),
+        .I2(DATA[7:4]),
+        .I3(DATA[3:0]),
         .S({Q1, Q0}),
         .Y(HEX_OUT)
     );
 
-    // Break the 4-bit bus (HEX_OUT) into individual wires (W3, W2, W1, W0) 
-    // to match your sevens_driver module port signature.
+    // 4. Split multiplexer output into bits
     assign {W3, W2, W1, W0} = HEX_OUT;
 
-    // Finally, the sevens driver instantiated with individual bit inputs.
+    // 5. Seven-segment decoder
     sevens_driver s_driver (
         .W3(W3),
         .W2(W2),
         .W1(W1),
         .W0(W0),
-        .A(A), 
-        .B(B), 
-        .C(C), 
-        .D(D), 
-        .E(E), 
-        .F(F), 
+        .A(A),
+        .B(B),
+        .C(C),
+        .D(D),
+        .E(E),
+        .F(F),
         .G(G)
     );
 
