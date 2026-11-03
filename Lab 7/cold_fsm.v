@@ -1,43 +1,66 @@
-// Cold FSM matching the state diagram (Figure 1b)
-module cold_fsm (
-    input CLK,
+
+`timescale 1ns / 1ps
+
+module illusion (
     input EN,
-    output reg [3:0] ONECOLD,
-    output reg [1:0] STATE_OUT
+    input [15:0] DATA,
+    input BOARDCLK,
+    output A, B, C, D, E, F, G,
+    output [3:0] ONECOLD
 );
-    // State encoding based on ONECOLD values in Figure 1b
-    // SR = 1110 (Q=00), SMR = 1010 / 1011, etc.
-    reg [1:0] state, next_state;
 
-    parameter S0 = 2'b00, S1 = 2'b01, S2 = 2'b10, S3 = 2'b11;
+    // FSM state variables
+    wire Q1, Q0;
 
-    always @(posedge CLK) begin
-        state <= next_state;
-    end
+    // Multiplexer output
+    wire [3:0] HEX_OUT;
 
-    always @(*) begin
-        case (state)
-            S0: next_state = S1;
-            S1: next_state = S2;
-            S2: next_state = S3;
-            S3: next_state = S0;
-            default: next_state = S0;
-        endcase
-    end
+    // Seven-segment driver inputs
+    wire W3, W2, W1, W0;
 
-    always @(*) begin
-        STATE_OUT = state;
-        if (EN) begin
-            case (state)
-                S0: ONECOLD = 4'b1110; // Digit 0 active (active low)
-                S1: ONECOLD = 4'b1101; // Digit 1 active
-                S2: ONECOLD = 4'b1011; // Digit 2 active
-                S3: ONECOLD = 4'b0111; // Digit 3 active
-                default: ONECOLD = 4'b1111;
-            endcase
-        end else begin
-            // Behavior when EN = 0 (turns off or shows specific states as per lab guide)
-            ONECOLD = 4'b1110; 
-        end
-    end
+    // Divided clock
+    wire FASTCLK;
+
+    // 1. Frequency divider
+    frequency_divider fd (
+        .CLKO(BOARDCLK),
+        .CLKF(FASTCLK)
+    );
+
+    // 2. One-cold finite state machine
+    cold_fsm c_fsm (
+        .CLK(FASTCLK),
+        .EN(EN),
+        .ONECOLD(ONECOLD),
+        .STATE_OUT({Q1, Q0})
+    );
+
+    // 3. Four-to-one, 4-bit multiplexer
+    mux_4bit_4to1 data_mux (
+        .I0(DATA[15:12]),
+        .I1(DATA[11:8]),
+        .I2(DATA[7:4]),
+        .I3(DATA[3:0]),
+        .S({Q1, Q0}),
+        .Y(HEX_OUT)
+    );
+
+    // 4. Split multiplexer output into bits
+    assign {W3, W2, W1, W0} = HEX_OUT;
+
+    // 5. Seven-segment decoder
+    sevens_driver s_driver (
+        .W3(W3),
+        .W2(W2),
+        .W1(W1),
+        .W0(W0),
+        .A(A),
+        .B(B),
+        .C(C),
+        .D(D),
+        .E(E),
+        .F(F),
+        .G(G)
+    );
+
 endmodule
